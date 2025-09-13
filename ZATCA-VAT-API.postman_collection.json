@@ -1,0 +1,85 @@
+{
+  "info": {
+    "_postman_id": "b1e2c3d4-5678-1234-9abc-def012345678",
+    "name": "ZATCA VAT Integration API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Generate CSR",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"organization_identifier\": \"312345678901233\",\n  \"solution_name\": \"YourSolution\",\n  \"model\": \"ModelX\",\n  \"serial_number\": \"SN123456\",\n  \"common_name\": \"Your Company\",\n  \"country\": \"SA\",\n  \"organization_name\": \"Your Company\",\n  \"organizational_unit_name\": \"IT\",\n  \"address\": \"123 Main St, Riyadh\",\n  \"invoice_type\": 1100,\n  \"production\": false,\n  \"business_category\": \"Technology\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost/api/zatca/generate-csr",
+          "protocol": "http",
+          "host": ["localhost"],
+          "path": ["api", "zatca", "generate-csr"]
+        }
+      }
+    },
+    {
+      "name": "Generate Invoice",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"supplier\": {\n    \"name\": \"Your Company\",\n    \"vat_number\": \"311111111101113\",\n    \"address\": \"123 Main St\",\n    \"building_no\": \"1\",\n    \"postal_code\": \"12345\",\n    \"city\": \"Riyadh\",\n    \"country_code\": \"SA\"\n  },\n  \"customer\": {\n    \"name\": \"Customer Name\",\n    \"vat_number\": \"312222222201113\",\n    \"address\": \"456 Elm St\",\n    \"building_no\": \"2\",\n    \"postal_code\": \"54321\",\n    \"city\": \"Jeddah\",\n    \"country_code\": \"SA\"\n  },\n  \"invoice\": {\n    \"invoice_number\": \"INV-001\",\n    \"issue_date\": \"2025-09-13\",\n    \"type\": \"standard\",\n    \"type_code\": \"invoice\",\n    \"currency\": \"SAR\",\n    \"taxable_amount\": 100,\n    \"tax_amount\": 15,\n    \"line_extension_amount\": 100,\n    \"tax_exclusive_amount\": 100,\n    \"tax_inclusive_amount\": 115,\n    \"prepaid_amount\": 0,\n    \"payable_amount\": 115,\n    \"allowance_total_amount\": 0\n  },\n  \"lines\": [\n    {\n      \"description\": \"Product A\",\n      \"quantity\": 2,\n      \"unit_price\": 50,\n      \"vat_rate\": 15,\n      \"tax_amount\": 15,\n      \"total\": 100\n    }\n  ]\n}"
+        },
+        "url": {
+          "raw": "http://localhost/api/zatca/generate-invoice",
+          "protocol": "http",
+          "host": ["localhost"],
+          "path": ["api", "zatca", "generate-invoice"]
+        }
+      }
+    },
+    {
+      "name": "Sign Invoice",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"xml\": \"<Invoice>...</Invoice>\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost/api/zatca/sign-invoice",
+          "protocol": "http",
+          "host": ["localhost"],
+          "path": ["api", "zatca", "sign-invoice"]
+        }
+      }
+    },
+    {
+      "name": "Report Invoice to ZATCA",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"signed_xml\": \"<Invoice>...</Invoice>\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost/api/zatca/report-invoice",
+          "protocol": "http",
+          "host": ["localhost"],
+          "path": ["api", "zatca", "report-invoice"]
+        }
+      }
+    }
+  ]
+}
