@@ -1,4 +1,37 @@
 
+# Project Setup
+
+1. **Clone the repository:**
+	```bash
+	git clone https://github.com/sagar-yourdevexpert/vat-poc.git
+	cd vat-poc
+	```
+
+2. **Install dependencies:**
+	```bash
+	composer install
+	```
+
+3. **Copy and edit your environment file:**
+	```bash
+	cp .env.example .env
+	# Edit .env as needed (set DB, APP_KEY, etc.)
+	php artisan key:generate
+	```
+
+4. **Run database migrations (if needed):**
+	```bash
+	php artisan migrate
+	```
+
+5. **Start the Laravel development server:**
+	```bash
+	php artisan serve
+	```
+
+The API will be available at http://localhost:8000
+
+
 ## ZATCA VAT Integration API
 
 This project provides APIs for Saudi ZATCA e-invoicing (Fatoora) integration using the php-zatca-xml library.
