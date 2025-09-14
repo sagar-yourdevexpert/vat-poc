@@ -1,3 +1,67 @@
+## ZATCA Invoice Reporting/Clearance Endpoint
+
+### Endpoint
+
+`POST /api/zatca/report-invoice`
+
+**Payload:**
+
+```
+{
+	"signed_xml": "<SIGNED_INVOICE_XML_STRING>"
+}
+```
+
+**Response:**
+
+- ZATCA clearance/reporting response as JSON.
+
+### Route Registration
+
+Add the following to your `routes/web.php` or `routes/api.php`:
+
+```php
+use App\Http\Controllers\ZatcaController;
+Route::post('/api/zatca/report-invoice', [ZatcaController::class, 'reportInvoiceToZatca']);
+```
+
+---
+## Signing Invoices (ZATCA Phase II)
+
+### Endpoint
+
+**POST** `/api/zatca/sign-invoice`
+
+#### Payload Example
+```json
+{
+  "xml": "<Invoice>...</Invoice>",
+  "certificate": "-----BEGIN CERTIFICATE-----\n...\n-----END CERTIFICATE-----",
+  "private_key": "-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----",
+  "secret_key": "your_secret_key_if_any"
+}
+```
+
+#### How to Obtain Certificate, Private Key, and Secret Key
+
+1. **Generate CSR and Private Key:**
+	- Use the `/api/zatca/generate-csr` endpoint to generate a Certificate Signing Request (CSR) and private key.
+	- Save the private key securely; you will need it for signing.
+
+2. **Submit CSR to ZATCA:**
+	- Submit the CSR to the ZATCA portal to obtain your production certificate.
+	- Download the issued certificate (PEM format).
+
+3. **Secret Key:**
+	- The secret key is provided by ZATCA for some integrations. If not required, leave it as an empty string or omit it.
+
+4. **Use in API:**
+	- Pass the XML, certificate, private key, and (if required) secret key to the `/api/zatca/sign-invoice` endpoint as shown above.
+
+**Note:** The certificate and private key must match (i.e., the private key used to generate the CSR for the certificate).
+
+**This endpoint is only required for ZATCA Phase II (integration phase) and is not needed for simple invoice generation.**
+
 
 # Project Setup
 

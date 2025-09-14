@@ -1,10 +1,10 @@
 <?php
 namespace App\Http\Controllers;
 
-use Illuminate\Support\Facades\Log;
 use App\Services\ZatcaApiService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Log;
 use Saleh7\Zatca\{
     SignatureInformation,UBLDocumentSignatures,ExtensionContent,UBLExtension,UBLExtensions,Signature,InvoiceType,AdditionalDocumentReference,
     TaxScheme,PartyTaxScheme,Address,LegalEntity,Delivery,Party,PaymentMeans,TaxCategory,
@@ -275,12 +275,112 @@ class ZatcaController extends Controller
     {
         $data = $request->validate([
             'xml' => 'required|string',
+            'certificate' => 'required|string',
+            'private_key' => 'required|string',
         ]);
 
-        // Example: sign XML (implement with your certificate)
-        // $signedXml = signZatcaXml($data['xml']);
-        $signedXml = $data['xml']; // Stub
+        // Use php-zatca-xml's InvoiceSigner for real ZATCA-compliant XML signing
+        $data = $request->validate([
+            'xml' => 'required|string',
+            'certificate' => 'required|string',
+            'private_key' => 'required|string',
+            'secret_key' => 'nullable|string',
+        ]);
+
+        $certificate = $request->input('certificate');
+        $invoiceXml = $request->input('xml');
+        $privateKey = $request->input('private_key');
+
+        // Debug: Log the invoice XML
+        Log::info('Received invoice XML:', [
+            'invoice_xml' => $invoiceXml
+        ]);
+
+        // Debug: Try to parse the XML and log the result
+        $xmlObj = null;
+        try {
+            $xmlObj = simplexml_load_string($invoiceXml);
+            if ($xmlObj === false) {
+                Log::error('Failed to parse invoice XML with simplexml_load_string');
+            } else {
+                Log::info('Parsed invoice XML successfully with simplexml_load_string');
+            }
+        } catch (\Exception $e) {
+            Log::error('Exception while parsing invoice XML', ['error' => $e->getMessage()]);
+        }
+
+        try {
+            // Debug: Log the received private_key and certificate for troubleshooting
+            Log::info('Received private_key:', ['private_key' => $data['private_key']]);
+            Log::info('Received certificate:', ['certificate' => $data['certificate']]);
+
+            // Try to parse the EC private key directly with phpseclib
+            try {
+                $testKey = \phpseclib3\Crypt\EC::loadPrivateKey($data['private_key']);
+                Log::info('phpseclib successfully loaded EC private key');
+            } catch (\Throwable $e) {
+                Log::error('phpseclib failed to load EC private key', ['error' => $e->getMessage()]);
+            }
+
+            try {
+            $certificate = new \Saleh7\Zatca\Helpers\Certificate(
+                $data['certificate'],
+                $data['private_key'],
+                $data['secret_key'] ?? ''
+            );
+        } catch (\Throwable $e) {
+                Log::error('Certificate constructor failed', ['error' => $e->getMessage()]);
+                throw $e; // Re-throw to be caught by outer catch
+            }
+
+            try{
+            $signer = \Saleh7\Zatca\InvoiceSigner::signInvoice($data['xml'], $certificate);
+            } catch (\Throwable $e) {
+                Log::error('InvoiceSigner::signInvoice failed', ['error' => $e->getMessage()]);
+                throw $e; // Re-throw to be caught by outer catch
+            }
+            
+            $signedXml = $signer->getXML();
+        } catch (\Throwable $e) {
+            Log::error('ZATCA invoice signing failed', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            return response()->json(['error' => 'Failed to sign invoice: ' . $e->getMessage()], 500);
+        }
 
         return response($signedXml, 200)->header('Content-Type', 'application/xml');
+    }
+
+    /**
+     * Report or clear a signed invoice XML to ZATCA.
+     *
+     * POST /api/zatca/report-invoice
+     *
+     * Expected JSON payload:
+     * {
+     *   "signed_xml": "..."
+     * }
+     *
+     * Returns ZATCA clearance/reporting response.
+     */
+    public function reportInvoiceToZatca(Request $request)
+    {
+        $data = $request->validate([
+            'signed_xml' => 'required|string',
+        ]);
+
+        try {
+            $zatcaApi = new \App\Services\ZatcaApiService();
+            $response = $zatcaApi->reportInvoice($data['signed_xml']);
+        } catch (\Throwable $e) {
+            Log::error('ZATCA invoice reporting failed', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            return response()->json(['error' => 'Failed to report invoice: ' . $e->getMessage()], 500);
+        }
+
+        return response()->json($response);
     }
 }

@@ -52,7 +52,7 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"xml\": \"<Invoice>...</Invoice>\"\n}"
+          "raw": "{\n  \"xml\": \"<Invoice>...</Invoice>\",\n  \"certificate\": \"-----BEGIN CERTIFICATE-----\\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA...\\n-----END CERTIFICATE-----\",\n  \"private_key\": \"-----BEGIN PRIVATE KEY-----\\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQ...\\n-----END PRIVATE KEY-----\",\n  \"secret_key\": \"your_secret_key_if_any\"\n}"
         },
         "url": {
           "raw": "http://localhost/api/zatca/sign-invoice",
